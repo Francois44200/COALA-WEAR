@@ -3,7 +3,10 @@ import { DEFAULT_LOCALE, FR_SITE_URL, LOCALE_COOKIE, detectLocale } from "../../
 // Crawlers always get the x-default (English) version so every language stays indexable.
 const BOT_UA = /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|embedly|pinterest|whatsapp|telegram|lighthouse|preview/i;
 
-export default (request: Request, context: { cookies: { get(name: string): string | undefined }; geo?: { country?: { code?: string } } }) => {
+export default (request: Request, context: { next(): Promise<Response>; cookies: { get(name: string): string | undefined }; geo?: { country?: { code?: string } } }) => {
+  // Netlify Forms submissions POST to "/": redirecting them would drop the submission.
+  if (request.method !== "GET" && request.method !== "HEAD") return context.next();
+
   const isBot = BOT_UA.test(request.headers.get("user-agent") ?? "");
   const locale = isBot
     ? DEFAULT_LOCALE

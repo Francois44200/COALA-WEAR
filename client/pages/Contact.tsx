@@ -47,11 +47,19 @@ export default function Contact() {
 
     setStatus("sending");
     try {
-      const formData = new FormData(form);
+      const fields: Record<string, string> = {};
+      new FormData(form).forEach((value, key) => {
+        if (typeof value === "string") fields[key] = value;
+      });
       const res = await fetch("/", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(formData as unknown as Record<string, string>).toString(),
+        body: new URLSearchParams({
+          ...fields,
+          "form-name": "contact-intl",
+          langue: locale,
+          page: window.location.href,
+        }).toString(),
       });
       if (!res.ok) throw new Error();
       setStatus("sent");
@@ -109,6 +117,7 @@ export default function Contact() {
               >
                 <input type="hidden" name="form-name" value="contact-intl" />
                 <input type="hidden" name="langue" value={locale} />
+                <input type="hidden" name="page" value="" />
                 <label className="ct-honey" aria-hidden="true">
                   {t.honeypot}
                   <input type="text" name="bot-field" tabIndex={-1} autoComplete="off" />
